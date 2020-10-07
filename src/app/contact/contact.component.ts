@@ -25,7 +25,9 @@ export class ContactComponent implements OnInit {
   feedbackForm: FormGroup;
   feedback: Feedback;
   contactType = ContactType;
-  feedbackcopy: Feedback[];
+  success = false;
+  submitted = false;
+  returnedFeedback: Feedback;
 
   formErrors = {
     'firstname': '',
@@ -75,6 +77,9 @@ export class ContactComponent implements OnInit {
       message: ''
     });
 
+    this.returnedFeedback = this.feedbackForm.value;
+    this.submitted = false;
+
     this.feedbackForm.valueChanges
     .subscribe(data => this.onValueChanged(data));
 
@@ -104,9 +109,22 @@ export class ContactComponent implements OnInit {
 
   onSubmit() {
     this.feedback = this.feedbackForm.value;
-    this.feedbackservice.submitFeedback(this.feedback)
-    .subscribe(feedback => this.feedback = feedback);
+    this.submitted = true;
+    if(this.feedbackForm.status=='VALID'){
+      this.feedbackservice.submitFeedback(this.feedback)
+      .subscribe( returnedFeedback => {
+        this.returnedFeedback = returnedFeedback;
+        this.success = true;
+        this.submitted = false;
+        setTimeout(() => {
+          this.success = false;
+          this.returnedFeedback = null;
+          this.createForm();
+        }, 5000);
+      });
+    }
     console.log(this.feedback);
+    
     this.feedbackForm.reset({
       firstname: '',
       lastname: '',
